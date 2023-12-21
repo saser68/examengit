@@ -1,0 +1,172 @@
+GITIGNORE(5)                                         Git Manual                                        GITIGNORE(5)
+
+NNAAMMEE
+       gitignore - Specifies intentionally untracked files to ignore
+
+SSYYNNOOPPSSIISS
+       $XDG_CONFIG_HOME/git/ignore, $GIT_DIR/info/exclude, .gitignore
+
+DDEESSCCRRIIPPTTIIOONN
+       A ggiittiiggnnoorree file specifies intentionally untracked files that Git should ignore. Files already tracked by
+       Git are not affected; see the NOTES below for details.
+
+       Each line in a ggiittiiggnnoorree file specifies a pattern. When deciding whether to ignore a path, Git normally
+       checks ggiittiiggnnoorree patterns from multiple sources, with the following order of precedence, from highest to
+       lowest (within one level of precedence, the last matching pattern decides the outcome):
+
+       •   Patterns read from the command line for those commands that support them.
+
+       •   Patterns read from a ..ggiittiiggnnoorree file in the same directory as the path, or in any parent directory (up
+           to the top-level of the working tree), with patterns in the higher level files being overridden by those
+           in lower level files down to the directory containing the file. These patterns match relative to the
+           location of the ..ggiittiiggnnoorree file. A project normally includes such ..ggiittiiggnnoorree files in its repository,
+           containing patterns for files generated as part of the project build.
+
+       •   Patterns read from $$GGIITT__DDIIRR//iinnffoo//eexxcclluuddee.
+
+       •   Patterns read from the file specified by the configuration variable ccoorree..eexxcclluuddeessFFiillee.
+
+       Which file to place a pattern in depends on how the pattern is meant to be used.
+
+       •   Patterns which should be version-controlled and distributed to other repositories via clone (i.e., files
+           that all developers will want to ignore) should go into a ..ggiittiiggnnoorree file.
+
+       •   Patterns which are specific to a particular repository but which do not need to be shared with other
+           related repositories (e.g., auxiliary files that live inside the repository but are specific to one
+           user’s workflow) should go into the $$GGIITT__DDIIRR//iinnffoo//eexxcclluuddee file.
+
+       •   Patterns which a user wants Git to ignore in all situations (e.g., backup or temporary files generated
+           by the user’s editor of choice) generally go into a file specified by ccoorree..eexxcclluuddeessFFiillee in the user’s
+           ~~//..ggiittccoonnffiigg. Its default value is $XDG_CONFIG_HOME/git/ignore. If $XDG_CONFIG_HOME is either not set or
+           empty, $HOME/.config/git/ignore is used instead.
+
+       The underlying Git plumbing tools, such as _g_i_t _l_s_-_f_i_l_e_s and _g_i_t _r_e_a_d_-_t_r_e_e, read ggiittiiggnnoorree patterns specified
+       by command-line options, or from files specified by command-line options. Higher-level Git tools, such as
+       _g_i_t _s_t_a_t_u_s and _g_i_t _a_d_d, use patterns from the sources specified above.
+
+PPAATTTTEERRNN FFOORRMMAATT
+       •   A blank line matches no files, so it can serve as a separator for readability.
+
+       •   A line starting with # serves as a comment. Put a backslash ("\\") in front of the first hash for
+           patterns that begin with a hash.
+
+       •   Trailing spaces are ignored unless they are quoted with backslash ("\\").
+
+       •   An optional prefix "!!" which negates the pattern; any matching file excluded by a previous pattern will
+           become included again. It is not possible to re-include a file if a parent directory of that file is
+           excluded. Git doesn’t list excluded directories for performance reasons, so any patterns on contained
+           files have no effect, no matter where they are defined. Put a backslash ("\\") in front of the first "!!"
+           for patterns that begin with a literal "!!", for example, "\\!!iimmppoorrttaanntt!!..ttxxtt".
+
+       •   The slash _/ is used as the directory separator. Separators may occur at the beginning, middle or end of
+           the ..ggiittiiggnnoorree search pattern.
+
+       •   If there is a separator at the beginning or middle (or both) of the pattern, then the pattern is
+           relative to the directory level of the particular ..ggiittiiggnnoorree file itself. Otherwise the pattern may also
+           match at any level below the ..ggiittiiggnnoorree level.
+
+       •   If there is a separator at the end of the pattern then the pattern will only match directories,
+           otherwise the pattern can match both files and directories.
+
+       •   For example, a pattern ddoocc//ffrroottzz// matches ddoocc//ffrroottzz directory, but not aa//ddoocc//ffrroottzz directory; however
+           ffrroottzz// matches ffrroottzz and aa//ffrroottzz that is a directory (all paths are relative from the ..ggiittiiggnnoorree file).
+
+       •   An asterisk "**" matches anything except a slash. The character "??" matches any one character except "//".
+           The range notation, e.g.  [[aa--zzAA--ZZ]], can be used to match one of the characters in a range. See
+           fnmatch(3) and the FNM_PATHNAME flag for a more detailed description.
+
+       Two consecutive asterisks ("****") in patterns matched against full pathname may have special meaning:
+
+       •   A leading "****" followed by a slash means match in all directories. For example, "****//ffoooo" matches file or
+           directory "ffoooo" anywhere, the same as pattern "ffoooo". "****//ffoooo//bbaarr" matches file or directory "bbaarr"
+           anywhere that is directly under directory "ffoooo".
+
+       •   A trailing "//****" matches everything inside. For example, "aabbcc//****" matches all files inside directory
+           "aabbcc", relative to the location of the ..ggiittiiggnnoorree file, with infinite depth.
+
+       •   A slash followed by two consecutive asterisks then a slash matches zero or more directories. For
+           example, "aa//****//bb" matches "aa//bb", "aa//xx//bb", "aa//xx//yy//bb" and so on.
+
+       •   Other consecutive asterisks are considered regular asterisks and will match according to the previous
+           rules.
+
+CCOONNFFIIGGUURRAATTIIOONN
+       The optional configuration variable ccoorree..eexxcclluuddeessFFiillee indicates a path to a file containing patterns of file
+       names to exclude, similar to $$GGIITT__DDIIRR//iinnffoo//eexxcclluuddee. Patterns in the exclude file are used in addition to
+       those in $$GGIITT__DDIIRR//iinnffoo//eexxcclluuddee.
+
+NNOOTTEESS
+       The purpose of gitignore files is to ensure that certain files not tracked by Git remain untracked.
+
+       To stop tracking a file that is currently tracked, use _g_i_t _r_m _-_-_c_a_c_h_e_d.
+
+       Git does not follow symbolic links when accessing a ..ggiittiiggnnoorree file in the working tree. This keeps behavior
+       consistent when the file is accessed from the index or a tree versus from the filesystem.
+
+EEXXAAMMPPLLEESS
+       •   The pattern hheelllloo..**  matches any file or directory whose name begins with hheelllloo... If one wants to
+           restrict this only to the directory and not in its subdirectories, one can prepend the pattern with a
+           slash, i.e.  //hheelllloo..**; the pattern now matches hheelllloo..ttxxtt, hheelllloo..cc but not aa//hheelllloo..jjaavvaa.
+
+       •   The pattern ffoooo// will match a directory ffoooo and paths underneath it, but will not match a regular file
+           or a symbolic link ffoooo (this is consistent with the way how pathspec works in general in Git)
+
+       •   The pattern ddoocc//ffrroottzz and //ddoocc//ffrroottzz have the same effect in any ..ggiittiiggnnoorree file. In other words, a
+           leading slash is not relevant if there is already a middle slash in the pattern.
+
+       •   The pattern "foo/*", matches "foo/test.json" (a regular file), "foo/bar" (a directory), but it does not
+           match "foo/bar/hello.c" (a regular file), as the asterisk in the pattern does not match "bar/hello.c"
+           which has a slash in it.
+
+               $ git status
+               [...]
+               # Untracked files:
+               [...]
+               #       Documentation/foo.html
+               #       Documentation/gitignore.html
+               #       file.o
+               #       lib.a
+               #       src/internal.o
+               [...]
+               $ cat .git/info/exclude
+               # ignore objects and archives, anywhere in the tree.
+               *.[oa]
+               $ cat Documentation/.gitignore
+               # ignore generated html files,
+               *.html
+               # except foo.html which is maintained by hand
+               !foo.html
+               $ git status
+               [...]
+               # Untracked files:
+               [...]
+               #       Documentation/foo.html
+               [...]
+
+       Another example:
+
+               $ cat .gitignore
+               vmlinux*
+               $ ls arch/foo/kernel/vm*
+               arch/foo/kernel/vmlinux.lds.S
+               $ echo '!/vmlinux*' >arch/foo/kernel/.gitignore
+
+       The second .gitignore prevents Git from ignoring aarrcchh//ffoooo//kkeerrnneell//vvmmlliinnuuxx..llddss..SS.
+
+       Example to exclude everything except a specific directory ffoooo//bbaarr (note the //** - without the slash, the
+       wildcard would also exclude everything within ffoooo//bbaarr):
+
+               $ cat .gitignore
+               # exclude everything except directory foo/bar
+               /*
+               !/foo
+               /foo/*
+               !/foo/bar
+
+SSEEEE AALLSSOO
+       ggiitt--rrmm(1), ggiittrreeppoossiittoorryy--llaayyoouutt(5), ggiitt--cchheecckk--iiggnnoorree(1)
+
+GGIITT
+       Part of the ggiitt(1) suite
+
+Git 2.34.1                                           02/08/2023                                        GITIGNORE(5)
